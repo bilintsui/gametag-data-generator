@@ -1,0 +1,249 @@
+#! /usr/bin/perl
+# (c) 2023 Bilin Tsui, licensed with GNU GPL v3.
+use JSON;
+my $srcpath_normal="tags/*";
+my $pattern_normal='^tags\/';
+my @types_normal=glob $srcpath_normal;
+my $srcpaths_raw;
+foreach my $rectype(@types_normal)
+{
+	my $basetype=$rectype;
+	$basetype=~s/$pattern_normal//;
+	push @{$srcpaths_raw->{$basetype}},$rectype;
+}
+my $srcpaths;
+foreach my $reckey(sort keys %{$srcpaths_raw})
+{
+	if($reckey ne 'worldgen')
+	{
+		@{$srcpaths->{$reckey}}=sort @{$srcpaths_raw->{$reckey}};
+	}
+	else
+	{
+		my @recpaths=sort @{$srcpaths_raw->{$reckey}};
+		my $recpaths_expanded;
+		foreach my $recpath(@recpaths)
+		{
+			my @recglobs=glob $recpath.'/*';
+			foreach my $recglob(@recglobs)
+			{
+				my $basetype=$recglob;
+				$basetype=~s/$pattern_normal//;
+				$basetype=~s/^worldgen\///;
+				push @{$recpaths_expanded->{$basetype}},$recglob;
+			}
+		}
+		foreach my $reckey_expanded(sort keys %{$recpaths_expanded})
+		{
+			@{$srcpaths->{$reckey_expanded}}=sort @{$recpaths_expanded->{$reckey_expanded}};
+		}
+	}
+}
+my $tags_raw;
+foreach my $rectype(sort keys %{$srcpaths})
+{
+	foreach my $recpath(@{$srcpaths->{$rectype}})
+	{
+		my @recglobs=glob $recpath.'/*';
+		foreach my $recglob(@recglobs)
+		{
+			chomp(my @recfiles=readpipe('find '.$recglob.' -type f -name *.json'));
+			foreach my $recfile(@recfiles)
+			{
+				my $rectagname=$recfile;
+				$rectagname=~s/^$recpath\///;
+				$rectagname=~s/\.json$//;
+				open SRCFD,"<$recfile";
+				my $rectagjson_raw=join(/\n/,<SRCFD>);
+				close SRCFD;
+				@{$tags_raw->{$rectype}->{$rectagname}}=@{decode_json($rectagjson_raw)->{values}};
+			}
+		}
+	}
+}
+my $tags_expanded;
+foreach my $rectype(sort keys %{$tags_raw})
+{
+	foreach my $rectagname(sort keys %{$tags_raw->{$rectype}})
+	{
+		my @tagmembers_tmp=@{$tags_raw->{$rectype}->{$rectagname}};
+		my @tagmembers_done=();
+		while($#tagmembers_tmp>=0)
+		{
+			my $recmember=shift @tagmembers_tmp;
+			if($recmember=~/^minecraft:/)
+			{
+				my $puremembername=$recmember;
+				$puremembername=~s/^minecraft://;
+				push @tagmembers_done,$puremembername;
+			}
+			if($recmember=~/^#minecraft:/)
+			{
+				my $newtagname=$recmember;
+				$newtagname=~s/^#minecraft://;
+				push @tagmembers_tmp,@{$tags_raw->{$rectype}->{$newtagname}};
+			}
+		}
+		@tagmembers_done=sort @tagmembers_done;
+		@{$tags_expanded->{$rectype}->{$rectagname}}=@tagmembers_done;
+	}
+}
+my $rtags_raw;
+foreach my $rectype(sort keys %{$tags_expanded})
+{
+	foreach my $rectagname(sort keys %{$tags_expanded->{$rectype}})
+	{
+		foreach my $rectagmember(@{$tags_expanded->{$rectype}->{$rectagname}})
+		{
+			push @{$rtags_raw->{$rectype}->{$rectagmember}},$rectagname;
+		}
+	}
+}
+my $rtags_sorted;
+foreach my $rectype(sort keys %{$rtags_raw})
+{
+	foreach my $recid(sort keys %{$rtags_raw->{$rectype}})
+	{
+		@{$rtags_sorted->{$rectype}->{$recid}}=sort @{$rtags_raw->{$rectype}->{$recid}}
+	}
+}
+print "return {\n";
+my @rectypes=sort keys %{$tags_raw};
+my $tmpcount1=0;
+print "\t['tag_ori'] = {\n";
+foreach my $rectype(@rectypes)
+{
+	my $tmpcount2=0;
+	print "\t\t['$rectype'] = {\n";
+	my @rectagnames=sort keys %{$tags_raw->{$rectype}};
+	foreach my $rectagname(@rectagnames)
+	{
+		my $tmpcount3=0;
+		print "\t\t\t['$rectagname'] = {\n";
+		my @rectagmembers=@{$tags_raw->{$rectype}->{$rectagname}};
+		foreach my $rectagmember(@rectagmembers)
+		{
+			if($tmpcount3!=$#rectagmembers)
+			{
+				$tmpcount3++;
+				print "\t\t\t\t'$rectagmember',\n";
+			}
+			else
+			{
+				print "\t\t\t\t'$rectagmember'\n";
+			}
+		}
+		if($tmpcount2!=$#rectagnames)
+		{
+			$tmpcount2++;
+			print "\t\t\t},\n";
+		}
+		else
+		{
+			print "\t\t\t}\n";
+		}
+	}
+	if($tmpcount1!=$#rectypes)
+	{
+		$tmpcount1++;
+		print "\t\t},\n";
+	}
+	else
+	{
+		print "\t\t}\n";
+	}
+}
+print "\t},\n";
+my @rectypes=sort keys %{$tags_expanded};
+my $tmpcount1=0;
+print "\t['tag'] = {\n";
+foreach my $rectype(@rectypes)
+{
+	my $tmpcount2=0;
+	print "\t\t['$rectype'] = {\n";
+	my @rectagnames=sort keys %{$tags_expanded->{$rectype}};
+	foreach my $rectagname(@rectagnames)
+	{
+		my $tmpcount3=0;
+		print "\t\t\t['$rectagname'] = {\n";
+		my @rectagmembers=@{$tags_expanded->{$rectype}->{$rectagname}};
+		foreach my $rectagmember(@rectagmembers)
+		{
+			if($tmpcount3!=$#rectagmembers)
+			{
+				$tmpcount3++;
+				print "\t\t\t\t'$rectagmember',\n";
+			}
+			else
+			{
+				print "\t\t\t\t'$rectagmember'\n";
+			}
+		}
+		if($tmpcount2!=$#rectagnames)
+		{
+			$tmpcount2++;
+			print "\t\t\t},\n";
+		}
+		else
+		{
+			print "\t\t\t}\n";
+		}
+	}
+	if($tmpcount1!=$#rectypes)
+	{
+		$tmpcount1++;
+		print "\t\t},\n";
+	}
+	else
+	{
+		print "\t\t}\n";
+	}
+}
+print "\t},\n";
+my @rectypes=sort keys %{$rtags_sorted};
+my $tmpcount1=0;
+print "\t['ID'] = {\n";
+foreach my $rectype(@rectypes)
+{
+	my $tmpcount2=0;
+	print "\t\t['$rectype'] = {\n";
+	my @recids=sort keys %{$rtags_sorted->{$rectype}};
+	foreach my $recid(@recids)
+	{
+		my $tmpcount3=0;
+		print "\t\t\t['$recid'] = {\n";
+		my @rectags=@{$rtags_sorted->{$rectype}->{$recid}};
+		foreach my $rectag(@rectags)
+		{
+			if($tmpcount3!=$#rectags)
+			{
+				$tmpcount3++;
+				print "\t\t\t\t'$rectag',\n";
+			}
+			else
+			{
+				print "\t\t\t\t'$rectag'\n";
+			}
+		}
+		if($tmpcount2!=$#recids)
+		{
+			$tmpcount2++;
+			print "\t\t\t},\n";
+		}
+		else
+		{
+			print "\t\t\t}\n";
+		}
+	}
+	if($tmpcount1!=$#rectypes)
+	{
+		$tmpcount1++;
+		print "\t\t},\n";
+	}
+	else
+	{
+		print "\t\t}\n";
+	}
+}
+print "\t}\n";
+print "}\n";
