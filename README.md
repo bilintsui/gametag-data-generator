@@ -1,5 +1,5 @@
 # GameTag module Data Generator
-Generate a qualified Lua table for Chinese Minecraft Module:GameTag
+Generate a qualified Lua table for Chinese Minecraft Wiki Module "GameTag"
 
 ## Prerequisites
 * Linux
