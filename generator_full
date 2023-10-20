@@ -66,7 +66,7 @@ foreach my $rectype(sort keys %{$srcpaths})
 				open SRCFD,"<$recfile";
 				my $rectagjson_raw=join(/\n/,<SRCFD>);
 				close SRCFD;
-				@{$tags_raw->{$rectype}->{$rectagname}}=@{decode_json($rectagjson_raw)->{values}};
+				push @{$tags_raw->{$rectype}->{$rectagname}}, @{decode_json($rectagjson_raw)->{values}};
 			}
 		}
 	}
