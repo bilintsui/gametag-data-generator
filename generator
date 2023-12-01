@@ -3,9 +3,8 @@
 use JSON;
 my $srcpath_normal="tags/*";
 my $pattern_normal='^tags\/';
-my @types_normal=glob $srcpath_normal;
 my $srcpaths_raw;
-foreach my $rectype(@types_normal)
+foreach my $rectype(glob $srcpath_normal)
 {
 	my $basetype=$rectype;
 	$basetype=~s/$pattern_normal//;
@@ -16,11 +15,11 @@ foreach my $reckey(sort keys %{$srcpaths_raw})
 {
 	if($reckey ne 'worldgen')
 	{
-		@{$srcpaths->{$reckey}}=sort @{$srcpaths_raw->{$reckey}};
+		@{$srcpaths->{$reckey}}=@{$srcpaths_raw->{$reckey}};
 	}
 	else
 	{
-		my @recpaths=sort @{$srcpaths_raw->{$reckey}};
+		my @recpaths=@{$srcpaths_raw->{$reckey}};
 		my $recpaths_expanded;
 		foreach my $recpath(@recpaths)
 		{
@@ -35,11 +34,12 @@ foreach my $reckey(sort keys %{$srcpaths_raw})
 		}
 		foreach my $reckey_expanded(sort keys %{$recpaths_expanded})
 		{
-			@{$srcpaths->{$reckey_expanded}}=sort @{$recpaths_expanded->{$reckey_expanded}};
+			@{$srcpaths->{$reckey_expanded}}=@{$recpaths_expanded->{$reckey_expanded}};
 		}
 	}
 }
 my $tags_raw;
+my $tags_raw_hash;
 foreach my $rectype(sort keys %{$srcpaths})
 {
 	foreach my $recpath(@{$srcpaths->{$rectype}})
@@ -56,7 +56,14 @@ foreach my $rectype(sort keys %{$srcpaths})
 				open SRCFD,"<$recfile";
 				my $rectagjson_raw=join(/\n/,<SRCFD>);
 				close SRCFD;
-				push @{$tags_raw->{$rectype}->{$rectagname}}, @{decode_json($rectagjson_raw)->{values}};
+				foreach my $rectagdata(@{decode_json($rectagjson_raw)->{values}})
+				{
+					if(!defined($tags_hash->{$rectype}->{$rectagname}->{$rectagdata}))
+					{
+						$tags_hash->{$rectype}->{$rectagname}->{$rectagdata}=1;
+						push @{$tags_raw->{$rectype}->{$rectagname}}, $rectagdata;
+					}
+				}
 			}
 		}
 	}
@@ -84,8 +91,17 @@ foreach my $rectype(sort keys %{$tags_raw})
 				push @tagmembers_tmp,@{$tags_raw->{$rectype}->{$newtagname}};
 			}
 		}
-		@tagmembers_done=sort @tagmembers_done;
-		@{$tags_expanded->{$rectype}->{$rectagname}}=@tagmembers_done;
+		my @tmp_dedup;
+		my $tmp_dedup_hash;
+		foreach $rec_dedup(sort @tagmembers_done)
+		{
+			if(!defined($tmp_dedup_hash->{$rec_dedup}))
+			{
+				$tmp_dedup_hash->{$rec_dedup}=1;
+				push @tmp_dedup,$rec_dedup;
+			}
+		}
+		@{$tags_expanded->{$rectype}->{$rectagname}}=@tmp_dedup;
 	}
 }
 my $rtags_raw;
