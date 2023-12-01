@@ -39,6 +39,7 @@ foreach my $reckey(sort keys %{$srcpaths_raw})
 	}
 }
 my $tags_raw;
+my $tags_raw_hash;
 foreach my $rectype(sort keys %{$srcpaths})
 {
 	foreach my $recpath(@{$srcpaths->{$rectype}})
@@ -55,7 +56,14 @@ foreach my $rectype(sort keys %{$srcpaths})
 				open SRCFD,"<$recfile";
 				my $rectagjson_raw=join(/\n/,<SRCFD>);
 				close SRCFD;
-				push @{$tags_raw->{$rectype}->{$rectagname}}, @{decode_json($rectagjson_raw)->{values}};
+				foreach my $rectagdata(@{decode_json($rectagjson_raw)->{values}})
+				{
+					if(!defined($tags_hash->{$rectype}->{$rectagname}->{$rectagdata}))
+					{
+						$tags_hash->{$rectype}->{$rectagname}->{$rectagdata}=1;
+						push @{$tags_raw->{$rectype}->{$rectagname}}, $rectagdata;
+					}
+				}
 			}
 		}
 	}
