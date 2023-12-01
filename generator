@@ -16,11 +16,11 @@ foreach my $reckey(sort keys %{$srcpaths_raw})
 {
 	if($reckey ne 'worldgen')
 	{
-		@{$srcpaths->{$reckey}}=sort @{$srcpaths_raw->{$reckey}};
+		@{$srcpaths->{$reckey}}=@{$srcpaths_raw->{$reckey}};
 	}
 	else
 	{
-		my @recpaths=sort @{$srcpaths_raw->{$reckey}};
+		my @recpaths=@{$srcpaths_raw->{$reckey}};
 		my $recpaths_expanded;
 		foreach my $recpath(@recpaths)
 		{
@@ -35,7 +35,7 @@ foreach my $reckey(sort keys %{$srcpaths_raw})
 		}
 		foreach my $reckey_expanded(sort keys %{$recpaths_expanded})
 		{
-			@{$srcpaths->{$reckey_expanded}}=sort @{$recpaths_expanded->{$reckey_expanded}};
+			@{$srcpaths->{$reckey_expanded}}=@{$recpaths_expanded->{$reckey_expanded}};
 		}
 	}
 }
