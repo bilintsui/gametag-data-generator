@@ -91,8 +91,17 @@ foreach my $rectype(sort keys %{$tags_raw})
 				push @tagmembers_tmp,@{$tags_raw->{$rectype}->{$newtagname}};
 			}
 		}
-		@tagmembers_done=sort @tagmembers_done;
-		@{$tags_expanded->{$rectype}->{$rectagname}}=@tagmembers_done;
+		my @tmp_dedup;
+		my $tmp_dedup_hash;
+		foreach $rec_dedup(sort @tagmembers_done)
+		{
+			if(!defined($tmp_dedup_hash->{$rec_dedup}))
+			{
+				$tmp_dedup_hash->{$rec_dedup}=1;
+				push @tmp_dedup,$rec_dedup;
+			}
+		}
+		@{$tags_expanded->{$rectype}->{$rectagname}}=@tmp_dedup;
 	}
 }
 my $rtags_raw;
