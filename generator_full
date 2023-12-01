@@ -5,16 +5,14 @@ my $srcpath_normal="tags/*";
 my $srcpath_experimental="datapacks/*/data/minecraft/tags/*";
 my $pattern_normal='^tags\/';
 my $pattern_experimental='^datapacks\/[^\/]+\/data\/minecraft\/tags\/';
-my @types_normal=glob $srcpath_normal;
-my @types_experimental=glob $srcpath_experimental;
 my $srcpaths_raw;
-foreach my $rectype(@types_normal)
+foreach my $rectype(glob $srcpath_normal)
 {
 	my $basetype=$rectype;
 	$basetype=~s/$pattern_normal//;
 	push @{$srcpaths_raw->{$basetype}},$rectype;
 }
-foreach my $rectype(@types_experimental)
+foreach my $rectype(glob $srcpath_experimental)
 {
 	my $basetype=$rectype;
 	$basetype=~s/$pattern_experimental//;

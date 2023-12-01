@@ -3,9 +3,8 @@
 use JSON;
 my $srcpath_normal="tags/*";
 my $pattern_normal='^tags\/';
-my @types_normal=glob $srcpath_normal;
 my $srcpaths_raw;
-foreach my $rectype(@types_normal)
+foreach my $rectype(glob $srcpath_normal)
 {
 	my $basetype=$rectype;
 	$basetype=~s/$pattern_normal//;
