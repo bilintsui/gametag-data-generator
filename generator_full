@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# (c) 2023 Bilin Tsui, licensed with GNU GPL v3.
+# (c) 2023, 2024 Bilin Tsui, licensed with GNU GPL v3.
 use JSON;
 my $srcpath_normal="tags/*";
 my $srcpath_experimental="datapacks/*/data/minecraft/tags/*";
@@ -135,16 +135,16 @@ foreach my $rectype(sort keys %{$rtags_raw})
 print "return {\n";
 my @rectypes=sort keys %{$tags_raw};
 my $tmpcount1=0;
-print "\t['tag_ori'] = {\n";
+print "\t[ 'tag_ori' ] = {\n";
 foreach my $rectype(@rectypes)
 {
 	my $tmpcount2=0;
-	print "\t\t['$rectype'] = {\n";
+	print "\t\t[ '$rectype' ] = {\n";
 	my @rectagnames=sort keys %{$tags_raw->{$rectype}};
 	foreach my $rectagname(@rectagnames)
 	{
 		my $tmpcount3=0;
-		print "\t\t\t['$rectagname'] = {\n";
+		print "\t\t\t[ '$rectagname' ] = {\n";
 		my @rectagmembers=@{$tags_raw->{$rectype}->{$rectagname}};
 		foreach my $rectagmember(@rectagmembers)
 		{
@@ -181,16 +181,16 @@ foreach my $rectype(@rectypes)
 print "\t},\n";
 my @rectypes=sort keys %{$tags_expanded};
 my $tmpcount1=0;
-print "\t['tag'] = {\n";
+print "\t[ 'tag' ] = {\n";
 foreach my $rectype(@rectypes)
 {
 	my $tmpcount2=0;
-	print "\t\t['$rectype'] = {\n";
+	print "\t\t[ '$rectype' ] = {\n";
 	my @rectagnames=sort keys %{$tags_expanded->{$rectype}};
 	foreach my $rectagname(@rectagnames)
 	{
 		my $tmpcount3=0;
-		print "\t\t\t['$rectagname'] = {\n";
+		print "\t\t\t[ '$rectagname' ] = {\n";
 		my @rectagmembers=@{$tags_expanded->{$rectype}->{$rectagname}};
 		foreach my $rectagmember(@rectagmembers)
 		{
@@ -227,16 +227,16 @@ foreach my $rectype(@rectypes)
 print "\t},\n";
 my @rectypes=sort keys %{$rtags_sorted};
 my $tmpcount1=0;
-print "\t['ID'] = {\n";
+print "\t[ 'ID' ] = {\n";
 foreach my $rectype(@rectypes)
 {
 	my $tmpcount2=0;
-	print "\t\t['$rectype'] = {\n";
+	print "\t\t[ '$rectype' ] = {\n";
 	my @recids=sort keys %{$rtags_sorted->{$rectype}};
 	foreach my $recid(@recids)
 	{
 		my $tmpcount3=0;
-		print "\t\t\t['$recid'] = {\n";
+		print "\t\t\t[ '$recid' ] = {\n";
 		my @rectags=@{$rtags_sorted->{$rectype}->{$recid}};
 		foreach my $rectag(@rectags)
 		{
